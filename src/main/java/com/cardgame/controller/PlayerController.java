@@ -3,7 +3,6 @@ package com.cardgame.controller;
 import com.cardgame.entity.Player;
 import com.cardgame.service.PlayerService;
 import java.io.Serializable;
-import java.util.Objects;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,25 +20,36 @@ import org.springframework.web.bind.annotation.RequestMethod;
 @Controller
 @RequestMapping(path = "api/v1/player")
 public class PlayerController implements Serializable {
-    
+
     private static final long serialVersionUID = 1L;
-    
+
     @Autowired
     private PlayerService service;
-    
+
     @RequestMapping(path = "", method = RequestMethod.POST)
     public ResponseEntity<String> add(final @RequestBody Player player) {
-        final UUID result = this.service.add(player);
-        if (Objects.nonNull(result)) {
-            return new ResponseEntity<>(result.toString(), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        String result = null;
+        HttpStatus status;
+        try {
+            result = this.service.add(player).toString();
+            status = HttpStatus.OK;
+        } catch (Exception e) {
+            e.printStackTrace();
+            status = HttpStatus.INTERNAL_SERVER_ERROR;
         }
+        return new ResponseEntity<>(result, status);
     }
-    
+
     @RequestMapping(path = "{id}", method = RequestMethod.DELETE)
     public ResponseEntity<String> delete(final @PathVariable("id") UUID id) {
-        final Boolean result = this.service.delete(id);
-        return new ResponseEntity<>(null, result ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR);
+        HttpStatus status;
+        try {
+            this.service.delete(id);
+            status = HttpStatus.OK;
+        } catch (Exception e) {
+            e.printStackTrace();
+            status = HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+        return new ResponseEntity<>(null, status);
     }
 }

@@ -21,31 +21,20 @@ public class PlayerService implements Serializable {
 
     @Autowired
     private PlayerRepository repository;
-    
+
     public Player getOne(UUID id) {
         return this.repository.getOne(id);
     }
 
     @Transactional
     public UUID add(final Player player) {
-        try {
-            player.setId(UUID.randomUUID());
-            this.repository.saveAndFlush(player);
-            return player.getId();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
+        player.setId(UUID.randomUUID());
+        this.repository.saveAndFlush(player);
+        return player.getId();
     }
-    
+
     @Transactional
-    public Boolean delete(final UUID id) {
-        try {
-            this.repository.deleteById(id);
-            return Boolean.TRUE;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return Boolean.FALSE;
-        }
+    public void delete(final UUID id) {
+        this.repository.deleteById(id);
     }
 }

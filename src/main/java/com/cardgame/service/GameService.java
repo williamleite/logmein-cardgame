@@ -3,11 +3,15 @@ package com.cardgame.service;
 import com.cardgame.entity.Card;
 import com.cardgame.entity.Game;
 import com.cardgame.entity.Player;
+import com.cardgame.exception.EmptyGameDeckException;
+import com.cardgame.exception.EmptyGamePlayersException;
+import com.cardgame.exception.InvalidGameIDException;
+import com.cardgame.exception.InvalidPlayerIDException;
+import com.cardgame.exception.PlayerNotInGameException;
 import com.cardgame.repository.CardRepository;
 import com.cardgame.repository.GameRepository;
 import java.io.Serializable;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -35,72 +39,53 @@ public class GameService implements Serializable {
 
     @Transactional
     public UUID create() {
+        Game game = new Game();
+        game.setId(UUID.randomUUID());
+        this.repository.saveAndFlush(game);
+        return game.getId();
+    }
+
+    @Transactional
+    public void delete(final UUID id) {
+        this.repository.deleteById(id);
+    }
+
+    @Transactional
+    public UUID addPlayer(final UUID gameId, final String playerIdName) throws InvalidGameIDException {
+        Player player = new Player();
         try {
-            Game game = new Game();
-            game.setId(UUID.randomUUID());
+            player.setId(UUID.fromString(playerIdName));
+        } catch (Exception e) {
+            player.setName(playerIdName);
+            player.setId(this.playerService.add(player));
+        }
+
+        Game game = this.repository.findById(gameId).orElse(null);
+        if (Objects.nonNull(game)) {
+            game.getPlayers().add(player);
             this.repository.saveAndFlush(game);
-            return game.getId();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+            return player.getId();
+        } else {
+            throw new InvalidGameIDException(gameId);
         }
     }
 
     @Transactional
-    public Boolean delete(final UUID id) {
-        try {
-            this.repository.deleteById(id);
-            return Boolean.TRUE;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return Boolean.FALSE;
+    public void removePlayer(UUID gameId, UUID playerId) throws InvalidGameIDException {
+        Game game = this.repository.findById(gameId).orElse(null);
+        if (Objects.nonNull(game)) {
+            game.getPlayers().removeIf(p -> Objects.equals(p.getId(), playerId));
+            this.repository.saveAndFlush(game);
+        } else {
+            throw new InvalidGameIDException(gameId);
         }
     }
 
     @Transactional
-    public UUID addPlayer(final UUID gameId, final String playerIdName) {
-        try {
-            Player player = new Player();
-            try {
-                player.setId(UUID.fromString(playerIdName));
-            } catch (Exception e) {
-                player.setName(playerIdName);
-                player.setId(this.playerService.add(player));
-            }
-
-            Game game = this.repository.findById(gameId).orElse(null);
-            if (Objects.nonNull(game)) {
-                game.getPlayers().add(player);
-                this.repository.saveAndFlush(game);
-                return player.getId();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return null;
-    }
-
-    @Transactional
-    public Boolean removePlayer(UUID gameId, UUID playerId) {
-        try {
-            Game game = this.repository.findById(gameId).orElse(null);
-            if (Objects.nonNull(game)) {
-                game.getPlayers().removeIf(p -> Objects.equals(p.getId(), playerId));
-                this.repository.saveAndFlush(game);
-                return Boolean.TRUE;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return Boolean.FALSE;
-    }
-
-    @Transactional
-    public Card deal(UUID gameId, UUID playerId) {
-        try {
-            Game game = this.repository.findById(gameId).orElse(null);
-            if (Objects.nonNull(game)) {
+    public Card deal(UUID gameId, UUID playerId) throws InvalidGameIDException, EmptyGameDeckException, InvalidPlayerIDException, PlayerNotInGameException, EmptyGamePlayersException {
+        Game game = this.repository.findById(gameId).orElse(null);
+        if (Objects.nonNull(game)) {
+            if (Objects.nonNull(game.getDeck()) && !game.getDeck().isEmpty()) {
                 Card available = game.getDeck().stream()
                     .filter(c -> Objects.isNull(c.getPlayer()))
                     .sorted(Comparator.comparing(Card::getSequence)).findFirst().orElse(null);
@@ -108,47 +93,65 @@ public class GameService implements Serializable {
                 if (Objects.nonNull(available)) {
                     Player player = this.playerService.getOne(playerId);
 
-                    if (Objects.nonNull(player) && game.getPlayers().stream().anyMatch(p -> Objects.equals(p.getId(), playerId))) {
-                        available.setPlayer(player);
-                        available.setGame(game);
-                        return this.cardRepository.saveAndFlush(available);
+                    if (Objects.nonNull(player)) {
+                        if (Objects.nonNull(game.getPlayers()) && !game.getPlayers().isEmpty()) {
+                            if (game.getPlayers().stream().anyMatch(p -> Objects.equals(p.getId(), playerId))) {
+                                available.setPlayer(player);
+                                available.setGame(game);
+                                return this.cardRepository.saveAndFlush(available);
+                            } else {
+                                throw new PlayerNotInGameException(playerId, gameId);
+                            }
+                        } else {
+                            throw new EmptyGamePlayersException(gameId);
+                        }
+                    } else {
+                        throw new InvalidPlayerIDException(playerId);
                     }
+                } else {
+                    return null;
                 }
+            } else {
+                throw new EmptyGameDeckException(gameId);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } else {
+            throw new InvalidGameIDException(gameId);
         }
-        return null;
     }
 
     @Transactional
-    public Boolean shuffle(UUID gameId) {
-        try {
-            Game game = this.repository.findById(gameId).orElse(null);
-            if (Objects.nonNull(game)) {
+    public void shuffle(UUID gameId) throws EmptyGameDeckException, InvalidGameIDException {
+        Game game = this.repository.findById(gameId).orElse(null);
+        if (Objects.nonNull(game)) {
+            if (Objects.nonNull(game.getDeck()) && !game.getDeck().isEmpty()) {
                 game.getDeck().stream()
                     .filter(c -> Objects.isNull(c.getPlayer()))
                     .forEach(c -> {
                         c.setSequence(UUID.randomUUID());
                     });
                 this.repository.saveAndFlush(game);
-                return Boolean.TRUE;
+            } else {
+                throw new EmptyGameDeckException(gameId);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } else {
+            throw new InvalidGameIDException(gameId);
         }
-        return Boolean.FALSE;
     }
 
-    public String peek(UUID gameId) {
+    public String peek(UUID gameId) throws InvalidGameIDException, EmptyGameDeckException {
         Game game = this.repository.findById(gameId).orElse(null);
         if (Objects.nonNull(game)) {
-            return game.getDeck().stream()
-                .filter(c -> Objects.isNull(c.getPlayer()))
-                .sorted(Comparator.comparing(Card::getSequence))
-                .map(c -> String.format("%s - %s", c.getSuit(), c.getFace()))
-                .collect(Collectors.joining(";"));
+            if (Objects.nonNull(game.getDeck()) && !game.getDeck().isEmpty()) {
+                return game.getDeck().stream()
+                    .filter(c -> Objects.isNull(c.getPlayer()))
+                    .sorted(Comparator.comparing(Card::getSequence))
+                    .map(c -> String.format("%s - %s", c.getSuit(), c.getFace()))
+                    .collect(Collectors.joining(";"));
+            } else {
+                throw new EmptyGameDeckException(gameId);
+            }
+        } else {
+            throw new InvalidGameIDException(gameId);
         }
-        return null;
     }
 }

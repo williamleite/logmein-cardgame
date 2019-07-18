@@ -3,6 +3,9 @@ package com.cardgame.service;
 import com.cardgame.entity.Card;
 import com.cardgame.entity.Game;
 import com.cardgame.enums.SUIT;
+import com.cardgame.exception.EmptyGameDeckException;
+import com.cardgame.exception.EmptyGamePlayersException;
+import com.cardgame.exception.InvalidGameIDException;
 import com.cardgame.repository.GameRepository;
 import com.cardgame.vo.PlayersTotal;
 import com.cardgame.vo.RemainingCard;
@@ -30,26 +33,26 @@ public class AnalyticsService implements Serializable {
     @Autowired
     private GameRepository gameRepository;
 
-    public List<Card> cards(final UUID gameId, final UUID playerId) {
-        try {
-            Game game = this.gameRepository.getOne(gameId);
-            if (Objects.nonNull(game)) {
+    public List<Card> cards(final UUID gameId, final UUID playerId) throws InvalidGameIDException, EmptyGameDeckException {
+        Game game = this.gameRepository.findById(gameId).orElse(null);
+        if (Objects.nonNull(game)) {
+            if (Objects.nonNull(game.getDeck()) && !game.getDeck().isEmpty()) {
                 return game.getDeck().stream()
                     .filter(c -> Objects.nonNull(c.getPlayer()))
                     .filter(c -> Objects.equals(c.getPlayer().getId(), playerId))
                     .collect(Collectors.toList());
+            } else {
+                throw new EmptyGameDeckException(gameId);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } else {
+            throw new InvalidGameIDException(gameId);
         }
-
-        return null;
     }
 
-    public List<PlayersTotal> playersTotal(final UUID gameId) {
-        try {
-            Game game = this.gameRepository.getOne(gameId);
-            if (Objects.nonNull(game)) {
+    public List<PlayersTotal> playersTotal(final UUID gameId) throws InvalidGameIDException, EmptyGamePlayersException {
+        Game game = this.gameRepository.getOne(gameId);
+        if (Objects.nonNull(game)) {
+            if (Objects.nonNull(game.getPlayers()) && !game.getPlayers().isEmpty()) {
                 return game.getPlayers().stream().map(p -> {
                     PlayersTotal pt = new PlayersTotal();
                     pt.setPlayer(p);
@@ -60,17 +63,18 @@ public class AnalyticsService implements Serializable {
                         .reduce(0, (a, b) -> a + b));
                     return pt;
                 }).sorted((pt1, pt2) -> pt2.getTotal() - pt1.getTotal()).collect(Collectors.toList());
+            } else {
+                throw new EmptyGamePlayersException(gameId);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } else {
+            throw new InvalidGameIDException(gameId);
         }
-        return null;
     }
 
-    public List<SuitsTotal> suitsTotal(final UUID gameId) {
-        try {
-            Game game = this.gameRepository.getOne(gameId);
-            if (Objects.nonNull(game)) {
+    public List<SuitsTotal> suitsTotal(final UUID gameId) throws InvalidGameIDException, EmptyGameDeckException {
+        Game game = this.gameRepository.getOne(gameId);
+        if (Objects.nonNull(game)) {
+            if (Objects.nonNull(game.getDeck()) && !game.getDeck().isEmpty()) {
                 return game.getDeck().stream()
                     .filter(c -> Objects.isNull(c.getPlayer()))
                     .collect(Collectors.groupingBy(Card::getSuit, Collectors.counting())).entrySet().stream().map(e -> {
@@ -79,17 +83,18 @@ public class AnalyticsService implements Serializable {
                     st.setTotal(e.getValue());
                     return st;
                 }).collect(Collectors.toList());
+            } else {
+                throw new EmptyGameDeckException(gameId);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } else {
+            throw new InvalidGameIDException(gameId);
         }
-        return null;
     }
 
-    public List<RemainingCard> remainingCards(UUID gameId) {
-        try {
-            Game game = this.gameRepository.getOne(gameId);
-            if (Objects.nonNull(game)) {
+    public List<RemainingCard> remainingCards(UUID gameId) throws EmptyGameDeckException, InvalidGameIDException {
+        Game game = this.gameRepository.getOne(gameId);
+        if (Objects.nonNull(game)) {
+            if (Objects.nonNull(game.getDeck()) && !game.getDeck().isEmpty()) {
                 return game.getDeck().stream()
                     .filter(c -> Objects.isNull(c.getPlayer()))
                     .collect(Collectors.groupingBy(Function.identity(), () -> new TreeMap<>(Comparator.<Card, SUIT>comparing(c -> c.getSuit()).thenComparing(c -> c.getFace())), Collectors.counting()))
@@ -102,10 +107,11 @@ public class AnalyticsService implements Serializable {
                     })
                     .sorted(Comparator.<RemainingCard, Integer>comparing(rc -> rc.getSuit().getSequence()).reversed().thenComparing(rc -> rc.getFace().getValue()).reversed())
                     .collect(Collectors.toList());
+            } else {
+                throw new EmptyGameDeckException(gameId);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } else {
+            throw new InvalidGameIDException(gameId);
         }
-        return null;
     }
 }

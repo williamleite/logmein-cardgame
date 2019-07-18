@@ -1,13 +1,15 @@
 package com.cardgame.controller;
 
 import com.cardgame.entity.Card;
+import com.cardgame.exception.EmptyGameDeckException;
+import com.cardgame.exception.EmptyGamePlayersException;
+import com.cardgame.exception.InvalidGameIDException;
 import com.cardgame.service.AnalyticsService;
 import com.cardgame.vo.PlayersTotal;
 import com.cardgame.vo.RemainingCard;
 import com.cardgame.vo.SuitsTotal;
 import java.io.Serializable;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -32,25 +34,81 @@ public class AnalyticsController implements Serializable {
     
     @RequestMapping(path = "cards/{game_id}/{player_id}", method = RequestMethod.GET)
     public ResponseEntity<List<Card>> cards(final @PathVariable("game_id") UUID gameId, final @PathVariable("player_id") UUID playerId) {
-        List<Card> result = this.service.cards(gameId, playerId);
-        return new ResponseEntity<>(result, Objects.nonNull(result) ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR);
+        List<Card> result = null;
+        HttpStatus status;
+        try {
+            result = this.service.cards(gameId, playerId);
+            status = HttpStatus.OK;
+        } catch (InvalidGameIDException ex) {
+            ex.printStackTrace();
+            status = HttpStatus.BAD_REQUEST;
+        } catch (EmptyGameDeckException ex) {
+            ex.printStackTrace();
+            status = HttpStatus.PRECONDITION_FAILED;
+        } catch (Exception e) {
+            e.printStackTrace();
+            status = HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+        return new ResponseEntity<>(result, status);
     }
     
     @RequestMapping(path = "players/{game_id}", method = RequestMethod.GET)
     public ResponseEntity<List<PlayersTotal>> playersTotal(final @PathVariable("game_id") UUID gameId) {
-        List<PlayersTotal> result = this.service.playersTotal(gameId);
-        return new ResponseEntity<>(result, Objects.nonNull(result) ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR);
+        List<PlayersTotal> result = null;
+        HttpStatus status;
+        try {
+            result = this.service.playersTotal(gameId);
+            status = HttpStatus.OK;
+        } catch (InvalidGameIDException ex) {
+            ex.printStackTrace();
+            status = HttpStatus.BAD_REQUEST;
+        } catch (EmptyGamePlayersException ex) {
+            ex.printStackTrace();
+            status = HttpStatus.PRECONDITION_FAILED;
+        } catch (Exception e) {
+            e.printStackTrace();
+            status = HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+        return new ResponseEntity<>(result, status);
     }
     
     @RequestMapping(path = "suits/{game_id}", method=RequestMethod.GET)
     public ResponseEntity<List<SuitsTotal>> suitsTotal(final @PathVariable("game_id") UUID gameId) {
-        List<SuitsTotal> result = this.service.suitsTotal(gameId);
-        return new ResponseEntity<>(result, Objects.nonNull(result) ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR);
+        List<SuitsTotal> result = null;
+        HttpStatus status;
+        try {
+            result = this.service.suitsTotal(gameId);
+            status = HttpStatus.OK;
+        } catch (InvalidGameIDException ex) {
+            ex.printStackTrace();
+            status = HttpStatus.BAD_REQUEST;
+        } catch (EmptyGameDeckException ex) {
+            ex.printStackTrace();
+            status = HttpStatus.PRECONDITION_FAILED;
+        } catch (Exception e) {
+            e.printStackTrace();
+            status = HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+        return new ResponseEntity<>(result, status);
     }
     
     @RequestMapping(path = "remaining/{game_id}", method = RequestMethod.GET)
     public ResponseEntity<List<RemainingCard>> remainingCards(final @PathVariable("game_id") UUID gameId) {
-        List<RemainingCard> result = this.service.remainingCards(gameId);
-        return new ResponseEntity<>(result, Objects.nonNull(result) ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR);
+        List<RemainingCard> result = null;
+        HttpStatus status;
+        try {
+            result = this.service.remainingCards(gameId);
+            status = HttpStatus.OK;
+        } catch (InvalidGameIDException ex) {
+            ex.printStackTrace();
+            status = HttpStatus.BAD_REQUEST;
+        } catch (EmptyGameDeckException ex) {
+            ex.printStackTrace();
+            status = HttpStatus.PRECONDITION_FAILED;
+        } catch (Exception e) {
+            e.printStackTrace();
+            status = HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+        return new ResponseEntity<>(result, status);
     }
 }
