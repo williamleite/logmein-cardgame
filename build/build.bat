@@ -40,6 +40,7 @@ ECHO   =  rmdir java /S /Q
 ECHO   =  mkdir java
 ECHO   =  copy ..\backend\target\CardGame-*.jar java                                                          =
 ECHO   =  rmdir dist /S /Q
+ECHO   =  CALL npm install
 ECHO   =  CALL npm run dist
 ECHO   ====================================================================================================================
 cd ..\frontend
@@ -47,6 +48,7 @@ rmdir java /S /Q
 mkdir java
 copy ..\backend\target\CardGame-*.jar .\java
 rmdir dist /S /Q
+CALL npm install
 CALL npm run dist
 IF %M%==1 PAUSE
 
