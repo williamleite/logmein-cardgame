@@ -16,7 +16,7 @@ IF "%JAVA_HOME%" == "C:\Program Files\Java\jdk1.8.0_201" (
 	ECHO JAVAHOME = %JAVA_HOME%
 ) ELSE (
     ECHO   ====================================================================================================================
-    ECHO   =  JAVA JDK 1.8 (201) Needed at "C:\Program Files\Java\jdk1.8.0_201"
+    ECHO   =  JAVA JDK 1.8 (201) Needed
     ECHO   ====================================================================================================================
 	SETX /M JAVA_HOME "C:\Program Files\Java\jdk1.8.0_201"
 	PAUSE
