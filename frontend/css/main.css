@@ -1,0 +1,73 @@
+.fixed-bottom {
+    text-align: center;
+}
+
+#loading, #progressOverview {
+    text-align: center;
+}
+
+#loading.row {
+    margin-top: 10px !important;
+}
+
+.loginfo {
+    color: navy;
+}
+
+.logerror {
+    color: maroon;
+}
+
+.show-log {
+    text-align: right !important;
+    margin: 10px 10px 0px 0px !important;
+}
+
+.modal-dialog, .modal-content {
+    width: 100% !important;
+    max-width: 90% !important;
+}
+
+.container-fluid {
+    margin-top: 10px;
+}
+
+.fa-check {
+    color: green;
+}
+
+.fa-exclamation-circle {
+    color: maroon;
+}
+
+.fa {
+    margin-right: 5px !important;
+    margin-left: 5px !important;
+}
+
+.nav-link.active {
+    background: linear-gradient(90deg, #007bff, #FFF) !important;
+}
+
+.row-title {
+    font-weight: bold;
+    text-align: center;
+}
+
+.row-hover {
+    text-align: center;
+}
+
+.row-hover:hover {
+    background-color: lightgreen;
+    cursor: pointer;
+}
+
+
+.row-modal {
+    width: 100% !important;
+}
+
+.suit {
+    height: 25px;
+}

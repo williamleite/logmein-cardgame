@@ -1,0 +1,58 @@
+{
+    "name": "logmein-cardgame",
+    "version": "1.0.2",
+    "description": "LogMeIn - Card Game",
+    "main": "main.js",
+    "scripts": {
+        "start": "electron .",
+        "dist": "build"
+    },
+    "repository": "",
+    "keywords": [
+        "logmein",
+        "card-game"
+    ],
+    "build": {
+        "appId": "com.cardgame",
+        "productName": "LogMeIn - Card Game",
+        "files": [
+            "**/*",
+            "!**/*.jar",
+            "!**/application.properties"
+        ],
+        "extraFiles": [
+            {
+                "from": "./config",
+                "to": "./config"
+            },
+            {
+                "from": "./java",
+                "to": "./java"
+            }
+        ],
+        "win": {
+            "target": "NSIS",
+            "icon": "build/icon.ico"
+        },
+        "nsis": {
+            "oneClick": false,
+            "perMachine": true,
+            "allowToChangeInstallationDirectory": true
+        }
+    },
+    "author": "William Leite",
+    "license": "",
+    "devDependencies": {
+        "electron": "^4.1.1",
+        "electron-builder": "^20.39.0"
+    },
+    "dependencies": {
+        "bootstrap": "^4.3.1",
+        "jquery": "^3.3.1",
+        "minimal-request-promise": "^1.5.0",
+        "moment": "^2.24.0",
+        "popper.js": "^1.14.7",
+        "ps-node": "^0.1.6",
+        "tree-kill": "^1.2.1"
+    }
+}

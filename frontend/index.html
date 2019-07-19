@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>LogMeIn - Card Game</title>
+
+    <link rel="stylesheet" href="css/main.css" />
+
+    <!-- Libraries -->
+    <link rel="stylesheet" href="css/bootstrap.css" />
+    <link rel="stylesheet" href="css/all.css" />
+
+    <script>
+        // Universal const
+        let $ = require('jquery');
+        require('popper.js');
+        require('bootstrap');
+        const http = require('http');
+        const fs = require("fs");
+        const moment = require('moment');
+        const electron = require('electron');
+
+        const log = require('./js/log-service');
+        const uiconst = require('./js/ui-const');
+
+        // Views
+        const welcomemat = require('./html/welcomemat');
+    </script>
+</head>
+
+<body>
+    <!-- navigation -->
+    <div class="container-fluid" id="tabcontainer">
+        <div class="row">
+            <div class="col-3">
+                <div class="nav flex-column nav-pills" id="tabLinks" role="tablist" aria-orientation="vertical">
+                    <a class="nav-link" id="nav-home" href="#welcomemat" role="tab" aria-controls="welcomemat" aria-selected="false">Home</a>
+                    <a class="nav-link" href="#" id="nav-logserver" data-toggle="modal" data-target="#logModal">Log</a>
+                    <a class="nav-link" href="#" id="nav-variables" data-toggle="modal" data-target="#variableModal">Variables</a>
+                </div>
+            </div>
+            <div class="col-9">
+                <div class="tab-content">
+                    <!-- WELCOME -->
+                    <div id="welcomemat" class="tab-pane fade container-fluid" role="tabpanel" aria-labelledby="welcomemat">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal -->
+    <div class="modal fade" id="logModal" tabindex="-1" role="dialog" aria-labelledby="logModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="logModalLabel">Log</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="logModalBody">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="variableModal" tabindex="-1" role="dialog" aria-labelledby="variableModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="variableModalLabel">Variables</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="variableModalBody">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- LOADING -->
+    <div id="loading" class="container-fluid">
+        <div class="form-group">
+            <div class="col-12">
+                <div class="spinner-border text-primary" role="status"></div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-12">
+                Loading, please wait...
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-12" id="lastLogLine"></div>
+        </div>
+    </div>
+</body>
+
+<script>
+    require('./js/main-controller');
+</script>
+
+</html>
