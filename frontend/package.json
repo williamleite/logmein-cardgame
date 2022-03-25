@@ -43,7 +43,7 @@
     "author": "William Leite",
     "license": "",
     "devDependencies": {
-        "electron": "^4.1.1",
+        "electron": "^13.6.6",
         "electron-builder": "^20.39.0"
     },
     "dependencies": {
